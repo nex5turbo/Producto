@@ -1,19 +1,20 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useDropzone } from 'react-dropzone';
 import { uploadImagesToSupabase } from '@/app/lib/supabase';
 import { useAuth } from '@/app/context/AuthContext';
 
 export default function ProductPage() {
-  const { user } = useAuth();
+  const { user, userData } = useAuth();
   const [productImages, setProductImages] = useState<string[]>([]);
   const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [resultPage, setResultPage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
+  const [credits, setCredits] = useState(0);
   const [productInfo, setProductInfo] = useState({
     name: '',
     description: '',
@@ -21,6 +22,14 @@ export default function ProductPage() {
     category: '',
     imageStyle: 'modern'
   });
+
+  // 사용자 크레딧 정보 로드
+  useEffect(() => {
+    if (userData) {
+      // userData.balance 또는 userData.credits가 있는지 확인하고 사용
+      setCredits(userData.balance || userData.credits || 0);
+    }
+  }, [userData]);
 
   // 알림 표시 함수
   const showAlertMessage = (message: string) => {
@@ -79,6 +88,11 @@ export default function ProductPage() {
       return;
     }
 
+    if (credits <= 0) {
+      showAlertMessage('Not enough credits. Please purchase more credits.');
+      return;
+    }
+
     try {
       setIsLoading(true);
       console.log("processing image files");
@@ -99,6 +113,9 @@ export default function ProductPage() {
       console.log(data);
 
       if (data.success) {
+        // 크레딧 사용 후 남은 크레딧 업데이트
+        setCredits(prev => Math.max(0, prev - 1));
+        
         // 알림 표시
         showAlertMessage('Image generation is in process. You can check out the result in My Page tab.');
 
@@ -175,13 +192,24 @@ export default function ProductPage() {
         )}
 
         <motion.div
-          className="text-center mb-12"
+          className="text-center mb-8"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
         >
           <h2 className="text-3xl font-bold mb-4">Product Image Generator</h2>
+          
+          {/* 크레딧 정보 표시 */}
+          <div className="inline-flex items-center px-4 py-2 bg-gray-100 rounded-full shadow-sm">
+            <div className="mr-2 bg-primary/10 rounded-full p-1.5">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <span className="font-medium text-gray-700">Available Credits: </span>
+            <span className="ml-1 font-bold text-primary">{credits}</span>
+          </div>
         </motion.div>
 
         <div className="max-w-6xl mx-auto">
@@ -336,10 +364,15 @@ export default function ProductPage() {
               </div>
 
               {/* Create Product Button - 모던한 스타일로 개선 */}
-              <div className="mt-8 flex justify-center">
+              <div className="mt-8 flex flex-col items-center justify-center">
+                {/* 크레딧 사용 안내 */}
+                <div className="mb-3 text-sm text-gray-500 bg-gray-50 px-4 py-2 rounded-full">
+                  <span className="font-medium">Note:</span> Generating a product image uses 1 credit
+                </div>
+                
                 <button
                   onClick={handleCreateProduct}
-                  disabled={isLoading}
+                  disabled={isLoading || credits <= 0}
                   className="px-8 py-3 bg-primary text-white rounded-lg shadow-md hover:bg-primary/90 transition-colors disabled:opacity-70 disabled:cursor-not-allowed flex items-center gap-2"
                 >
                   {isLoading ? (
@@ -349,6 +382,10 @@ export default function ProductPage() {
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
                       </svg>
                       <span>Creating...</span>
+                    </>
+                  ) : credits <= 0 ? (
+                    <>
+                      <span>Not Enough Credits</span>
                     </>
                   ) : (
                     <>
