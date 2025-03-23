@@ -7,6 +7,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: '/',
       disallow: ['/api/', '/auth/'],
     },
-    sitemap: 'https://producto.vercel.app/sitemap.xml',
+    sitemap: 'https://producto-puce.vercel.app/sitemap.xml',
   };
 } 

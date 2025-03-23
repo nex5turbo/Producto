@@ -10,32 +10,32 @@ const techLogos = [
   { 
     name: 'OpenAI', 
     icon: 'https://upload.wikimedia.org/wikipedia/commons/4/4d/OpenAI_Logo.svg',
-    alt: 'OpenAI 로고',
+    alt: 'OpenAI Logo',
   },
   { 
     name: 'Google', 
     icon: 'https://www.google.com/images/branding/googlelogo/1x/googlelogo_color_272x92dp.png',
-    alt: 'Google 로고',
+    alt: 'Google Logo',
   },
   { 
     name: 'Gemini', 
     icon: '/gemini-logo.png',
-    alt: 'Gemini AI 로고',
+    alt: 'Gemini AI Logo',
   },
   { 
     name: 'Claude', 
     icon: '/claude-logo.png',
-    alt: 'Claude AI 로고',
+    alt: 'Claude AI Logo',
   },
   { 
     name: 'Vercel', 
     icon: 'https://assets.vercel.com/image/upload/front/favicon/vercel/180x180.png',
-    alt: 'Vercel 로고',
+    alt: 'Vercel Logo',
   },
   { 
     name: 'TensorFlow', 
     icon: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2d/Tensorflow_logo.svg/1000px-Tensorflow_logo.svg.png',
-    alt: 'TensorFlow 로고',
+    alt: 'TensorFlow Logo',
   }
 ];
 
@@ -75,21 +75,21 @@ export default function About() {
     '@context': 'https://schema.org',
     '@type': 'Service',
     'name': 'Producto AI Product Image Generator',
-    'description': 'AI 기술을 활용하여 전문적인 제품 이미지를 생성하고 관리할 수 있는 웹 서비스',
+    'description': 'Generate and manage professional product images with AI technology',
     'provider': {
       '@type': 'Organization',
       'name': 'Producto',
-      'url': 'https://producto.vercel.app'
+      'url': 'https://producto-puce.vercel.app'
     },
     'serviceType': 'AI Image Generation',
     'offers': {
       '@type': 'Offer',
       'price': '0',
-      'priceCurrency': 'KRW'
+      'priceCurrency': 'USD'
     },
     'areaServed': {
       '@type': 'Country',
-      'name': 'South Korea'
+      'name': 'Worldwide'
     }
   };
 
@@ -114,7 +114,7 @@ export default function About() {
     },
   };
 
-  // 무한 스크롤 기능을 위한 레퍼런스와 효과
+  // Infinite scroll reference and effect
   const scrollRef = useRef<HTMLDivElement>(null);
   
   useEffect(() => {

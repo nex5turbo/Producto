@@ -2,7 +2,7 @@ import { MetadataRoute } from 'next';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   // 기본 URL 설정
-  const baseUrl = 'https://producto.vercel.app';
+  const baseUrl = 'https://producto-puce.vercel.app';
   
   // 현재 날짜를 변경 날짜로 사용
   const currentDate = new Date().toISOString();
