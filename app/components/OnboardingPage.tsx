@@ -33,6 +33,7 @@ export default function OnboardingPage() {
     try {
       setLoading(true);
       
+      // 1. Save user data to users table
       const { data, error } = await supabase
         .from('users')
         .upsert({
@@ -45,11 +46,23 @@ export default function OnboardingPage() {
           shop_category: formData.hasShop ? formData.shopCategory : null,
           role: formData.role,
           come_path: formData.comePath,
-          credits: 1, // Initial credits
           created_at: new Date().toISOString(),
         });
 
       if (error) throw error;
+      
+      // 2. Add 1 credit to user_credits table
+      const currentDate = new Date().toISOString();
+      const { error: creditsError } = await supabase
+        .from('user_credits')
+        .insert({
+          user_id: user.id,
+          balance: 1,
+          created_at: currentDate,
+        });
+        
+      if (creditsError) throw creditsError;
+      
       setUserData(data);
       router.refresh(); // Refresh main page
     } catch (error) {
@@ -78,7 +91,7 @@ export default function OnboardingPage() {
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
           <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
-            Welcome to TryFirst
+            Welcome to Producto
           </h2>
           <p className="mt-2 text-sm text-gray-600">
             Please tell us a bit about yourself
@@ -200,7 +213,7 @@ export default function OnboardingPage() {
               >
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
-                    How did you learn about our service?
+                    How did you know about our service?
                   </label>
                   <select
                     value={formData.comePath}
