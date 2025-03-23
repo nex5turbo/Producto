@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useDropzone } from 'react-dropzone';
-import { uploadImagesToSupabase } from '@/app/lib/supabase';
+import { uploadImagesToSupabase, supabase } from '@/app/lib/supabase';
 import { useAuth } from '@/app/context/AuthContext';
 
 export default function ProductPage() {
@@ -14,7 +14,7 @@ export default function ProductPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
-  const [credits, setCredits] = useState(0);
+  const [creditBalance, setCreditBalance] = useState(0);
   const [productInfo, setProductInfo] = useState({
     name: '',
     description: '',
@@ -23,13 +23,31 @@ export default function ProductPage() {
     imageStyle: 'modern'
   });
 
-  // 사용자 크레딧 정보 로드
+  // 사용자 크레딧 정보 로드 - Supabase에서 직접 가져오도록 수정
   useEffect(() => {
-    if (userData) {
-      // userData.balance 또는 userData.credits가 있는지 확인하고 사용
-      setCredits(userData.balance || userData.credits || 0);
-    }
-  }, [userData]);
+    const fetchCreditBalance = async () => {
+      if (!user) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('user_credits')
+          .select('balance')
+          .eq('user_id', user.id)
+          .single();
+          
+        if (error && error.code !== 'PGRST116') {
+          console.error('Error fetching credit balance:', error);
+          return;
+        }
+        
+        setCreditBalance(data?.balance || 0);
+      } catch (error) {
+        console.error('Error fetching credit balance:', error);
+      }
+    };
+    
+    fetchCreditBalance();
+  }, [user]);
 
   // 알림 표시 함수
   const showAlertMessage = (message: string) => {
@@ -88,7 +106,7 @@ export default function ProductPage() {
       return;
     }
 
-    if (credits <= 0) {
+    if (creditBalance <= 0) {
       showAlertMessage('Not enough credits. Please purchase more credits.');
       return;
     }
@@ -113,8 +131,22 @@ export default function ProductPage() {
       console.log(data);
 
       if (data.success) {
-        // 크레딧 사용 후 남은 크레딧 업데이트
-        setCredits(prev => Math.max(0, prev - 1));
+        // 크레딧 사용 후 사용자의 크레딧 잔액을 즉시 업데이트
+        try {
+          const { error } = await supabase
+            .from('user_credits')
+            .update({ balance: Math.max(0, creditBalance - 1) })
+            .eq('user_id', user.id);
+            
+          if (error) {
+            console.error('Error updating credit balance:', error);
+          } else {
+            // 로컬 상태 업데이트
+            setCreditBalance(prev => Math.max(0, prev - 1));
+          }
+        } catch (error) {
+          console.error('Error updating credit balance:', error);
+        }
         
         // 알림 표시
         showAlertMessage('Image generation is in process. You can check out the result in My Page tab.');
@@ -200,15 +232,20 @@ export default function ProductPage() {
         >
           <h2 className="text-3xl font-bold mb-4">Product Image Generator</h2>
           
-          {/* 크레딧 정보 표시 */}
-          <div className="inline-flex items-center px-4 py-2 bg-gray-100 rounded-full shadow-sm">
+          {/* 크레딧 정보 표시 - UI 개선 */}
+          <div className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-gray-50 to-gray-100 rounded-full shadow-sm">
             <div className="mr-2 bg-primary/10 rounded-full p-1.5">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
             <span className="font-medium text-gray-700">Available Credits: </span>
-            <span className="ml-1 font-bold text-primary">{credits}</span>
+            <span className="ml-1 font-bold text-primary">{creditBalance}</span>
+            {creditBalance === 0 && (
+              <a href="/pricing" className="ml-3 text-xs text-secondary hover:text-secondary/80 underline">
+                Purchase Credits
+              </a>
+            )}
           </div>
         </motion.div>
 
@@ -372,7 +409,7 @@ export default function ProductPage() {
                 
                 <button
                   onClick={handleCreateProduct}
-                  disabled={isLoading || credits <= 0}
+                  disabled={isLoading || creditBalance <= 0}
                   className="px-8 py-3 bg-primary text-white rounded-lg shadow-md hover:bg-primary/90 transition-colors disabled:opacity-70 disabled:cursor-not-allowed flex items-center gap-2"
                 >
                   {isLoading ? (
@@ -383,7 +420,7 @@ export default function ProductPage() {
                       </svg>
                       <span>Creating...</span>
                     </>
-                  ) : credits <= 0 ? (
+                  ) : creditBalance <= 0 ? (
                     <>
                       <span>Not Enough Credits</span>
                     </>
