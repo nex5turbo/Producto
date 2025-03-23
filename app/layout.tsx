@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Inter, Open_Sans } from 'next/font/google';
 import './globals.css';
 import { AuthContextProvider } from './context/AuthContext';
@@ -16,6 +16,12 @@ const openSans = Open_Sans({
   display: 'swap', 
   variable: '--font-open-sans'
 });
+
+// viewport를 별도 export로 분리
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+};
 
 export const metadata: Metadata = {
   title: 'Producto - AI Product Image Generator',
@@ -47,7 +53,6 @@ export const metadata: Metadata = {
     images: ['https://producto-puce.vercel.app/og-image.jpg'],
     creator: '@producto',
   },
-  viewport: 'width=device-width, initial-scale=1',
   robots: {
     index: true,
     follow: true,
