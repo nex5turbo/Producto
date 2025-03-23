@@ -67,13 +67,10 @@ export default function OnboardingPage() {
       
       // Next.js Router로 이동이 작동하지 않는 경우 window.location 사용
       try {
-        router.refresh(); // 상태 업데이트
-        router.push('/'); // 메인 페이지로 이동
-        
         // 200ms 후에도 이동이 안 되었다면 window.location 사용
         setTimeout(() => {
           window.location.href = '/';
-        }, 200);
+        }, 100);
       } catch (navError) {
         console.error('Navigation error:', navError);
         window.location.href = '/';
