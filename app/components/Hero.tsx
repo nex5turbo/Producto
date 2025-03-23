@@ -2,8 +2,24 @@
 
 import { motion } from 'framer-motion';
 import Script from 'next/script';
+import { useAuth } from '@/app/context/AuthContext';
+import { useRouter } from 'next/navigation';
 
 export default function Hero() {
+  const { user } = useAuth();
+  const router = useRouter();
+
+  // Get Started 버튼 클릭 핸들러
+  const handleGetStarted = () => {
+    if (user) {
+      // 로그인한 상태: Product Image Generator 섹션으로 스크롤
+      document.getElementById('fitting-room')?.scrollIntoView({ behavior: 'smooth' });
+    } else {
+      // 로그인하지 않은 상태: 로그인 페이지로 이동
+      router.push('/login');
+    }
+  };
+
   const productSchema = {
     '@context': 'https://schema.org',
     '@type': 'SoftwareApplication',
@@ -46,15 +62,15 @@ export default function Hero() {
                 Generate professional product images with just a few photos. Make your e-commerce management more efficient with Producto.
               </p>
               <div className="flex flex-wrap gap-4">
-                <motion.a
-                  href="#fitting-room"
+                <motion.button
+                  onClick={handleGetStarted}
                   className="btn btn-primary"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   aria-label="Get Started - Generate Product Images"
                 >
                   Get Started
-                </motion.a>
+                </motion.button>
                 <motion.a
                   href="#pricing"
                   className="btn btn-outline"
